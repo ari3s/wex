@@ -1,0 +1,128 @@
+#!/bin/sh
+
+#
+#	Configure external USB camera as a webcamera
+#
+#	Requirements:
+#		ffmpeg
+#		gphoto2
+#		v4l2loopback
+#
+
+CAMERA="Canon EOS 6d Mark II"
+DEVICE="10"
+
+ACTIVATE=""
+INFO=""
+RESET=""
+VIDEO_DEVICE="/dev/video$DEVICE"
+
+display_help_and_exit() {
+	echo "wex handles external USB camera as a webcam"
+	echo "  Usage: wex [-h|--help] [-a|--activate] [-c|--camera <name>] [-d|--device <number>] [-i|--info] [-r|--remove]"
+	echo "  -h, --help              display this help message"
+	echo "  -a, --activate          activate external USB camera using v4l2loopback device"
+	echo "  -c, --camera <name>     external camera name"
+	echo "  -d, --device <number>   video device number"
+	echo "  -i, --info              video devices and external USB camera information"
+	echo "  -r, --reset             reset v4l2loopback devices"
+	exit 0
+}
+
+display_info() {
+	#       Device file list
+	v4l2-ctl --list-devices
+	#       Detected external USB camera info
+	gphoto2 --auto-detect
+}
+
+error() {
+	#	Error message is the parameter
+	if [ "$INFO" ] ; then
+		display_info
+	fi
+	echo "$1" >&2
+}
+
+if [ $# -le 0 ] ; then
+	#	No parameters, so display help and exit
+	display_help_and_exit
+fi
+
+while [ $# -gt 0 ]
+do
+	#	Parse parameters
+	key="$1"
+
+	case $key in
+	-a|--activate)
+		ACTIVATE="TRUE"
+		shift
+		;;
+	-c|--camera)
+		if [ -n "$2" ] && [ "${2:0:1}" != "-" ]; then
+			CAMERA="$2"
+			shift 2
+		else
+			echo "Error: Argument for $1 is missing" >&2
+			exit 1
+		fi
+		;;
+	-d|--device)
+		if [ -n "$2" ] && [ "${2:0:1}" != "-" ]; then
+			DEVICE="$2"
+			VIDEO_DEVICE="/dev/video$DEVICE"
+			shift 2
+		else
+			echo "Error: Argument for $1 is missing" >&2
+			exit 1
+		fi
+		;;
+	-h|--help)
+		display_help_and_exit
+		;;
+	-i|--info)
+		INFO="TRUE"
+		shift
+		;;
+	-r|--reset)
+		RESET="TRUE"
+		shift
+		;;
+	*)	#	Unkown option
+		echo "Error: Unknown option $1"
+		exit 1
+		;;
+	esac	
+done
+
+if [ "$RESET" ] ; then
+	#	Reset v4l2loopback devices
+	sudo modprobe -r v4l2loopback
+fi
+
+if [ "$ACTIVATE" ] ; then
+	if ! gphoto2 --auto-detect | grep -q "$CAMERA" ; then
+		#	External USB camera was not detected
+		error "Error: $CAMERA is not connected"
+		exit 1
+	fi
+	if [ ! -c "$VIDEO_DEVICE" ] ; then
+		#	Video device is missing, create it using v4l2loopback
+		sudo modprobe v4l2loopback devices=1 video_nr="$DEVICE" card_label="$CAMERA" exclusive_caps=1 max_buffers=2
+		if [ ! -c "$VIDEO_DEVICE" ] ; then
+			#	File /dev/video<n> does not exist
+			error "Error: Missing camera device $VIDEO_DEVICE"
+			exit 1
+		fi
+	fi
+	if [ "$INFO" ] ; then
+		display_info
+	fi
+	#	Start external USB camera capturing
+	gphoto2 --stdout --capture-movie | ffmpeg -i - -vcodec rawvideo -pix_fmt yuv420p -threads 0 -f v4l2 "$VIDEO_DEVICE"
+else
+	if [ "$INFO" ] ; then
+		display_info
+	fi
+fi
