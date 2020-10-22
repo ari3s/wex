@@ -38,6 +38,9 @@ The parameters mean::
         -i, --info              video devices and external USB camera information
         -r, --reset             reset v4l2loopback devices
 
+The script uses restricted commands which need administrative rights. Therefore, such commands are run with ``sudo``,
+and the user is prompted for their password.
+
 ============
  Experience
 ============
@@ -59,9 +62,9 @@ and should be changed, reset v4l2loopback devices by running wex with ``--reset`
  Limitations
 =============
 
-USB 2.0 throughput limits the resolution to 1024x576px and 25fps.
+USB 2.0 throughput limits the resolution to 1024x576px and 25fps on Canon EOS 6D Mark II camera.
 
-The script does not support cameras connected with HDMI cable directly nor 
+The script supports neither cameras connected with HDMI cable directly nor 
 through HDMI to USB convertors which would enable Full HD 1080p resolution on USB 3.0 interface.
 
 The script was tested with only one external connected camera.
