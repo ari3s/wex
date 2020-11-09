@@ -3,7 +3,7 @@
 #####
 
 **wex** is a shell script which configures external USB camera as a webcamera
-or for video recording on a Linux system. The script was tested on Fedora 31 and 32.
+or for video recording on a Linux system. The script was tested on Fedora 31, 32 and 33.
 
 ==============
  Installation
