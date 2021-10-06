@@ -93,7 +93,7 @@ do
 		echo "Error: Unknown option $1"
 		exit 1
 		;;
-	esac	
+	esac
 done
 
 if [ "$RESET" ] ; then
