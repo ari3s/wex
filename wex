@@ -26,6 +26,7 @@ display_help_and_exit() {
 	echo "  -d, --device <number>   video device number"
 	echo "  -i, --info              video devices and external USB camera information"
 	echo "  -r, --reset             reset v4l2loopback devices"
+	echo "  -s, --stop              stop gvfs-gphoto2-volume-monitor service and gvfsd-gphoto2 daemon"
 	exit 0
 }
 
@@ -89,12 +90,27 @@ do
 		RESET="TRUE"
 		shift
 		;;
+	-s|--stop)
+		STOP="TRUE"
+		shift
+		;;
 	*)	#	Unkown option
 		echo "Error: Unknown option $1"
 		exit 1
 		;;
 	esac
 done
+
+if [ "$STOP" ] ; then
+	#       Stop gvfs-gphoto2-volume-monitor service and gvfsd-gphoto2 daemon
+	if ps -C  gvfs-gphoto2-volume-monitor >/dev/null ; then
+		systemctl --user stop gvfs-gphoto2-volume-monitor.service
+		systemctl --user disable gvfs-gphoto2-volume-monitor.service
+	fi
+	if ps -C gvfsd-gphoto2 >/dev/null ; then
+		kill $(pidof gvfsd-gphoto2)
+	fi
+fi
 
 if [ "$RESET" ] ; then
 	#	Reset v4l2loopback devices
