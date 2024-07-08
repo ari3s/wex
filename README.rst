@@ -16,7 +16,7 @@ Before you run the script first time, check that following packages are installe
         v4l2loopback
 
 ``v4l2loopback``, which source code is available at `GitHub <https://github.com/umlaeute/v4l2loopback>`_, is not a standard part of Fedora distribution.
-``v4l2loopback`` package can be installed either from `RPMfusion repository <https://koji.rpmfusion.org/koji/packageinfo?packageID=624`_ or from `COPR reporistory <https://copr.fedorainfracloud.org/coprs/fulltext/?fulltext=v4l2loopback>`_.
+``v4l2loopback`` package can be installed either from `RPMfusion repository <https://koji.rpmfusion.org/koji/packageinfo?packageID=624>`_ or from `COPR reporistory <https://copr.fedorainfracloud.org/coprs/fulltext/?fulltext=v4l2loopback>`_.
 
 =======
  Usage
